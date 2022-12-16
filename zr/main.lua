@@ -5,6 +5,8 @@ local World = require("World")
 local Game = require("Game")
 local SelectedElementUI = require("userinterface/SelectedElementUI")
 local Window = require("uilib/Window")
+local Unit = require("objects/Unit")
+local Faction = require("objects/Faction")
 
 function love.load()
 
@@ -35,22 +37,29 @@ function love.load()
   w2:addTextElement("Hello World")
   w2:addTextElement("Hello World2")
   w2:addTextElement("Hello World3")
+  local f = Faction.new("Humans")
+  local u1 = Unit.new(400, 400, f)
 
 end
-
 
 function love.update(dt)
   Game.mouseOverUI = false
   Window.updateAll(dt) -- update the windows before the Game (drag)
-  Tile.updateAllTiles()
+  Tile.updateAllTiles(dt)
   Game.update(dt)
+  Unit.updateAllUnits(dt)
 end
 
 function love.draw()
 
   Tile.drawAllTiles()
   Building.drawAllBuildings()
+  Unit.drawAllUnits()
   SelectedElementUI.displayUI()
   Window.drawAll()
 
+end
+
+function love.wheelmoved(dx, dy)
+  Game.handleWheelMoved(dx, dy)
 end

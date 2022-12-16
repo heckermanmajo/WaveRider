@@ -1,8 +1,20 @@
 local DrawAble = require("interfaces/DrawAble")
 local Game = require("Game")
-local Utils = require("utils")
+--local Utils = require("utils")
 local Window = require("uilib/Window")
 
+---@class Tile: DrawAble
+---@field x number
+---@field y number
+---@field width number
+---@field height number
+---@field rotation number
+---@field scale_x number
+---@field scale_y number
+---@field origin_x number
+---@field origin_y number
+---@field image love.Image
+---@field building Building|nil
 local Tile = {
   __cls = Tile,
   __name = "Tile",
@@ -50,20 +62,31 @@ function Tile.drawAllTiles()
   end
 end
 
-function Tile.updateAllTiles()
+--- Updates all tiles, called in Game.update
+--- @param dt number
+--- @return nil
+--- @see Game.update
+function Tile.updateAllTiles(dt)
   -- if we click on a tile this tile is selcted
 
   if love.mouse.isDown(1) then
     if Game.mouseOverUI then
       return
     end
-    if Window.one_is_dragged then
+    print("TODO: Open context menu")
+    --todo
+  end
+
+  if love.mouse.isDown(1) then
+    -- if the mouse is over ui, we do not want to select a tile
+    if Game.mouseOverUI then
       return
     end
 
     local x, y = love.mouse.getPosition()
     x = x + Game.getCurrentScreenFactorX()
     y = y + Game.getCurrentScreenFactorY()
+
     if Game.isOutsideWorld(x, y) == false then
       local tile = Tile.getTileAt(x, y)
       if Game.selectedTile then
@@ -71,21 +94,31 @@ function Tile.updateAllTiles()
       end
       Game.selectedTile = tile
       Game.selectedTile.rect = true
-      local w = Window.new(100, 100, 200, 200, "Tile " .. tile.x .. " - " .. tile.y)
+
+      local w = Window.new(
+        100,
+        100,
+        200,
+        200,
+        "Tile " .. tile.x .. " - " .. tile.y
+      )
       w:addTextElement(tile:toString())
+
       if Tile.tileWindow then
         w.x = Tile.tileWindow.x
         w.y = Tile.tileWindow.y
         Tile.tileWindow:close()
       end
       Tile.tileWindow = w
+
       w.onClose = function()
         Tile.tileWindow = nil
         Tile.selectedTile = nil
       end
-    end
 
-  end
+    end -- Game.isOutsideWorld(x, y) == false
+
+  end -- if love.mouse.isDown(1)
 
 end
 
@@ -110,6 +143,7 @@ function Tile.new(x, y, width, height)
   self.walkable = true
   self.rect = false
   self.rectColor = { 0, 0, 0, 0 }
+  self.units = {}
   return self
 end
 
@@ -121,12 +155,20 @@ function Tile:isPassable()
   return self.walkable
 end
 
+--- Returns a short string representation of this tile.
+--- @return string A short representation of the tile
 function Tile:toString()
   if self.building ~= nil then
-    return "Tile: " .. self.x .. " " .. self.y .. " with building: " .. self.building:toString()
+    return (
+      "Tile: "
+        .. self.x
+        .. " "
+        .. self.y
+        .. " with building: "
+        .. self.building:toString()
+    )
   end
   return "Tile: " .. self.x .. " " .. self.y
 end
-
 
 return Tile
